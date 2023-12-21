@@ -125,11 +125,11 @@ public class LlamaContext implements Closeable {
     llamaSampleFrequencyAndPresencePenaltiesNative(candidates, lastTokens, alphaFrequency, alphaPresence);
   }
 
-  private native LlamaBatch createBatchNative(int maxTokenCount, int embeddingVectorSize, int sequenceIdLength);
+  private native LlamaBatch llamaBatchInitNative(int nTokens, int embd, int nSeqMax);
 
-  public LlamaBatch createBatch(int maxTokenCount) {
+  public LlamaBatch llamaBatchInit(int nTokens, int embd, int nSeqMax) {
     validateState();
-    return createBatchNative(maxTokenCount,0, 1);
+    return llamaBatchInitNative(nTokens,embd, nSeqMax);
   }
 
   public static native LlamaContextParams llamaContextDefaultParams();
@@ -168,6 +168,7 @@ public class LlamaContext implements Closeable {
     }
 
     private native void submitSequenceOldNative(int[] tokens, int sequenceId, int tokenSequenceIndex);
+
     public Sequence submitSequenceOld(final int[] tokens) {
       validateState();
       if (currentTokenCount + tokens.length > maxTokenCount) {
@@ -187,6 +188,8 @@ public class LlamaContext implements Closeable {
       sequences.put(sequenceId, sequence);
       return sequence;
     }
+
+
 
     public void appendToSequence(final int[] tokens, final Sequence sequence) {
       validateState();
