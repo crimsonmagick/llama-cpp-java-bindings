@@ -1,5 +1,7 @@
 package net.jllama.api;
 
+import net.jllama.core.LlamaContext;
+import net.jllama.core.LlamaContextParams;
 import net.jllama.core.LlamaModel;
 
 public class Model {
@@ -9,8 +11,16 @@ public class Model {
   }
 
   private boolean closed;
-  private LlamaModel llamaModel;
+  private final LlamaModel llamaModel;
 
+  public ContextConfigurer newContext() {
+    return new ContextConfigurer(this);
+  }
+
+  Context createContext(final LlamaContextParams llamaContextParams) {
+    final LlamaContext llamaContext = llamaModel.createContext(llamaContextParams);
+    return new Context(llamaContext);
+  }
 
   public boolean isClosed() {
     return closed;

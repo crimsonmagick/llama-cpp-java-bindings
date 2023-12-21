@@ -47,72 +47,6 @@ public class Llama implements Closeable {
     }
   }
 
-  public class ModelConfigurer {
-
-    public class ParametrizedLoader {
-
-      private ParametrizedLoader() {
-        llamaModelParams = new LlamaModelParams();
-      }
-
-      private ParametrizedLoader(final LlamaModelParams llamaModelParams) {
-        this.llamaModelParams = llamaModelParams;
-      }
-
-      private final LlamaModelParams llamaModelParams;
-      private String path;
-
-      public Model load() {
-        return loadModel(path, llamaModelParams);
-      }
-
-      public ParametrizedLoader path(final String path) {
-        this.path = path;
-        return this;
-      }
-
-      public ParametrizedLoader gpuLayerCount(final int gpuLayerCount) {
-        llamaModelParams.setnGpuLayers(gpuLayerCount);
-        return this;
-      }
-
-      public ParametrizedLoader mainGpuIndex(final int mainGpuIndex) {
-        llamaModelParams.setMainGpu(mainGpuIndex);
-        return this;
-      }
-
-      public ParametrizedLoader tensorSplit(final float[] tensorSplit) {
-        llamaModelParams.setTensorSplit(tensorSplit);
-        return this;
-      }
-
-      public ParametrizedLoader vocabOnly(final boolean vocabOnly) {
-        llamaModelParams.setVocabOnly(vocabOnly);
-        return this;
-      }
-
-      public ParametrizedLoader useMmap(final boolean useMmap) {
-        llamaModelParams.setUseMmap(useMmap);
-        return this;
-      }
-
-      public ParametrizedLoader useMlock(final boolean useMlock) {
-        llamaModelParams.setUseMlock(useMlock);
-        return this;
-      }
-
-    }
-
-    public ParametrizedLoader withDefaults() {
-      return new ParametrizedLoader(LlamaModel.llamaModelDefaultParams());
-    }
-
-    public ParametrizedLoader with() {
-      return new ParametrizedLoader();
-    }
-
-  }
-
   private Llama(final boolean useNuma) {
     initializedUseNuma = useNuma;
     LlamaCpp.loadLibrary();
@@ -121,10 +55,10 @@ public class Llama implements Closeable {
   }
 
   public ModelConfigurer newModel() {
-    return new ModelConfigurer();
+    return new ModelConfigurer(this);
   }
 
-  private Model loadModel(final String path, final LlamaModelParams llamaModelParams) {
+  Model loadModel(final String path, final LlamaModelParams llamaModelParams) {
     if (path == null || path.isEmpty()) {
       throw new MissingParameterException("Model cannot be loaded. Path is a required parameter.");
     }
