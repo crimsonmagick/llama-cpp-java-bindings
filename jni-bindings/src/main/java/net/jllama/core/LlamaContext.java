@@ -279,15 +279,15 @@ public class LlamaContext implements Closeable {
 
     private final long batchPointer;
     private boolean freed;
-    public final int nTokens;
-    public final int[] token;
-    public final float[] embd;
-    public final int[] pos;
-    public final int[] nSeqId;
-    public final int[][] seqId;
-    public final byte[] logits;
+    public int nTokens;
+    public int[] token;
+    public float[] embd;
+    public int[] pos;
+    public int[] nSeqId;
+    public int[][] seqId;
+    public byte[] logits;
 
-    public LlamaBatch(final long batchPointer, final int nTokens, final int[] token, final float[] embd, final int[] pos, final int[] nSeqId, final int[][] seqId, final byte[] logits) {
+    public LlamaBatch(long batchPointer, int nTokens, int[] token, float[] embd, int[] pos, int[] nSeqId, int[][] seqId, byte[] logits) {
       this.batchPointer = batchPointer;
       this.freed = false;
       this.nTokens = nTokens;
@@ -298,7 +298,6 @@ public class LlamaContext implements Closeable {
       this.seqId = seqId;
       this.logits = logits;
     }
-
 
     private native void llamaBatchFreeNative();
 

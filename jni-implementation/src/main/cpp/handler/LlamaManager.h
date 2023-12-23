@@ -93,7 +93,7 @@ class LlamaManager {
                                jobjectArray jSeqId,
                                jbooleanArray jLogits);
       jobject
-      llamaBatchInit(jobject jContext, jint nTokens, jint embd, jint nSeqMax);
+      llamaBatchInit(jobject jContext, jint nTokens, jint jEmbd, jint nSeqId);
      private:
         friend class LlamaManager;
         explicit LlamaSession(JNIEnv* env, LlamaManager* outer)

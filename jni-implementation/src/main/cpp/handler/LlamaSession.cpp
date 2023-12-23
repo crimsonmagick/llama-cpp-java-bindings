@@ -536,14 +536,14 @@ jobject LlamaManager::LlamaSession::llamaBatchInitOld(jobject jContext,
 
 jobject LlamaManager::LlamaSession::llamaBatchInit(jobject jContext,
                                                    jint jNTokens,
-                                                   jint embd,
-                                                   jint nSeqMax) {
-  return withJniExceptions(env, [this, jContext, jNTokens, embd, nSeqMax] {
+                                                   jint jEmbd,
+                                                   jint nSeqId) {
+  return withJniExceptions(env, [this, jContext, jNTokens, jEmbd, nSeqId] {
     auto batchInit = reinterpret_cast<llama_batch_init_pointer>(getFunctionAddress("llama_batch_init"));
-    llama_batch batchStack = batchInit(jNTokens, embd, nSeqMax);
+    llama_batch batchStack = batchInit(jNTokens, jEmbd, nSeqId);
     llama_batch* batchHeap = new llama_batch;
     std::memcpy(batchHeap, &batchStack, sizeof(llama_batch));
-    return jni::constructBatch(env, jContext, jNTokens, embd, nSeqMax, batchHeap);
+    return jni::constructBatch(env, jContext, batchHeap, jNTokens, jEmbd, nSeqId);
   });
 }
 

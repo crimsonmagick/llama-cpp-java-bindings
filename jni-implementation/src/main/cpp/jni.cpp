@@ -1,5 +1,6 @@
 #include <iostream>
 #include <jni.h>
+#include <memory>
 #include <sstream>
 #include "jni.h"
 #include "exceptions/DynamicLibraryException.h"
@@ -316,36 +317,53 @@ jobjectArray newObjectArray(JNIEnv* env, jint size, jclass memberType) {
     return jBatch;
   }
 
-  jobject constructBatch(JNIEnv* env, jobject jContext, jint jNTokens,
-                         jint jEmbd, jint nSeqMax, llama_batch *batch) {
+  jobject constructBatch(JNIEnv* env, jobject jContext,  llama_batch *batch, jint jNTokens, jint jEmbd, jint nSeqId) {
     auto jBatchPointer = reinterpret_cast<jlong>(batch);
     jclass jBatchClass = env->FindClass("net/jllama/core/LlamaContext$LlamaBatch");
     if (jBatchClass == nullptr) {
       throw JNIException("Unable to find LlamaBatch class");
     }
-    jfloatArray jEmdArray;
+    jfloatArray jEmbdArray;
     jintArray jTokenArray;
+    jint jLength;
     if (jEmbd) {
-      jEmdArray = newPrimitiveArray<jfloatArray>(env, jEmbd);
+      jLength = jEmbd;
+      jEmbdArray = newPrimitiveArray<jfloatArray>(env, jLength);
       jTokenArray = nullptr;
     } else {
-      jTokenArray = newPrimitiveArray<jintArray>(env, jEmbd);
-      jEmdArray = nullptr;
+      jLength = jNTokens;
+      jTokenArray = newPrimitiveArray<jintArray>(env, jLength);
+      jEmbdArray = nullptr;
     }
-//    jobjectArray jSeqArray = newObjectArray(env, )
+    jintArray jNSeqIdArray = newPrimitiveArray<jintArray>(env, jLength);
 
-    jmethodID jConstructor = env->GetMethodID(jBatchClass, "<init>", "(Lnet/jllama/core/LlamaContext;JI)V");
-//    if (jConstructor == nullptr) {
-//      throw JNIException("Unable to find LlamaBatch constructor");
-//    }
-//    if
-//    jobject jBatch = env->NewObject(jBatchClass, jConstructor,
-//                                    jContext, jBatchPointer, );
+    // initialize the 2d seqId array
+    jobjectArray jSeqIdArray = newObjectArray(env, jLength, env->FindClass("[I"));
+    std::unique_ptr<jint[]> fill(new jint[nSeqId]);
+    for (int i = 0; i < nSeqId; i++) {
+      fill[i] = 0;
+    }
+    for (int i = 0; i < jLength; i++) {
+      jintArray jSingleSeqArray = newPrimitiveArray<jintArray>(env, nSeqId);
+      env->SetIntArrayRegion(jSingleSeqArray, 0, nSeqId, fill.get());
+      env->SetObjectArrayElement(jSeqIdArray, i, jSingleSeqArray);
+      env->DeleteLocalRef(jSingleSeqArray);
+    }
+
+    jintArray jPos = newPrimitiveArray<jintArray>(env, jLength);
+    jbyteArray jLogits = newPrimitiveArray<jbyteArray>(env, jLength);
+
+    jmethodID jConstructor = env->GetMethodID(jBatchClass, "<init>", "(Lnet/jllama/core/LlamaContext;JI[I[F[I[I[[I[B)V");
+    if (jConstructor == nullptr) {
+      throw JNIException("Unable to find LlamaBatch constructor");
+    }
+//    jobject jBatch = env->NewObject(jBatchClass, jConstructor, jContext,
+//                                    jBatchPointer, batch->n_tokens, jTokenArray, jEmbdArray,
+//                                    jPos, jNSeqIdArray, jSeqIdArray, jLogits);
 //    if (jBatch == nullptr) {
 //      throw JNIException("Unable to initialize LlamaBatch");
 //    }
     return nullptr;
-//    return jBatch;
   }
 
   jobject constructLlamaContext(JNIEnv* env, llama_context* jcontextPointer) {
